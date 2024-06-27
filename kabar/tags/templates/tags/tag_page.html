@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+
+    <!--Был ли предоставлен параметр tag в http-запросе-->
+    {% if request.GET.tag %}
+        <h4>Showing pages tagged "{{ request.GET.tag }}"</h4>
+    {% endif %}
+
+    <!--materialpages - дополнительный контекст страницы (задается в модели MaterialsTagIndexPage)-->
+    {% for materialpage in materialpages %}
+
+          <p>
+              <strong><a href="{% pageurl materialpage %}">{{ materialpage.title }}</a></strong><br />
+
+              <!--Отображает дату и время последнего изменения страницы-->
+              <small>Revised: {{ materialpage.latest_revision_created_at }}</small><br />
+
+          </p>
+
+    {% empty %}
+        No pages found with that tag.
+    {% endfor %}
+
+{% endblock %}

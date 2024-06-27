@@ -1,0 +1,170 @@
+* { margin: 0; padding: 0; outline:0; }
+
+body {
+    font-size: 12px;
+    line-height: 20px;
+    font-family: Georgia, Arial, Helvetica, Sans-Serif;
+    background: url() repeat 0 0;
+}
+
+a { text-decoration: none; cursor:pointer; }
+a:hover { text-decoration: underline; }
+
+a img { border: 0; }
+
+input, textarea, select { font-family: Arial, Helvetica, sans-serif; font-size:12px; }
+textarea { overflow:auto; }
+
+.cl { display: block; height: 0; font-size: 0; line-height: 0; text-indent: -4000px; clear: both; }
+.notext { font-size: 0; line-height: 0; text-indent: -4000px; }
+
+.left, .alignleft { float: left; display: inline; }
+.right, .alignright { float: right; display: inline; }
+
+
+.shell { width: 980px; margin: 0 auto; }
+.border { border: 1px solid #e8e8e8; background: #fff; position: relative; }
+
+h1 {
+    margin-bottom: 20px;
+}
+
+ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#navigation { height: 43px; border-top: 1px solid #dbdbdb; border-bottom: 1px solid #dbdbdb; }
+#navigation ul li { float: left; height: 43px; border-right: 1px solid #dbdbdb; font-size: 12px; line-height: 43px; font-weight: bold; text-transform: uppercase; }
+#navigation ul li:last-child {border-right: none}
+#navigation ul li a { float: left; height: 43px; color: #000; padding: 0 34px; }
+#navigation ul li a:hover,
+#navigation ul li a.active { color: #ff0000; text-decoration: none; }
+
+#navigation ul li a.home { color: green; }
+#navigation ul li a.admin { color: blue; }
+
+
+#main { width: 932px; padding: 37px 24px 17px 24px; }
+#main h3 { font-size: 12px; line-height: 15px; color: #000; text-transform: uppercase;}
+#main a.more:hover { text-decoration: none; }
+
+#content { width: 905px; }
+
+.highlight {  }
+.highlight p { padding: 0 0 11px 0; }
+.highlight img { margin: 4px 12px 0 12px; }
+
+.projects { padding: 10px 0 0 0; }
+.projects ul, .projects .meta { margin: 0 0 17px 0; }
+.projects .item { margin: 0 0 28px 0; }
+.projects .image { width: 183px; height: 111px; border: 0px solid #dbdbdb; padding: 2px; margin: 0 20px 0 3px; }
+.projects .text { width: 600px; }
+.projects .text h4 { font-size: 12px; line-height: 15px; color: #333; text-transform: uppercase; padding: 3px 0 2px 0; }
+.projects .text p { padding: 0 0 3px 0; }
+
+.btn-buy:hover { text-decoration: none; }
+
+.advertisement { padding: 0 0 13px 0; }
+.advertisement h3 { margin: 0 0 18px 0; }
+.advertisement .ads { padding: 0 15px 0 7px; }
+.advertisement .ad { margin: 0 0 18px 0; }
+
+.image-list {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 10px;
+}
+
+.content {
+    margin-bottom: 20px;
+}
+
+.tags {
+    margin-bottom: 20px;
+}
+
+#footer { font-family: Arial, sans-serif; font-size: 11px; line-height: 14px; color: #7f7f7f; padding: 18px 27px 20px 24px; }
+#footer a{ color: #7f7f7f; }
+
+.pagination {
+    display: flex;
+    padding: 20px 0;
+}
+
+.pagination a,
+.pagination span {
+    border: 1px solid #ddd; /* Граница вокруг номеров страниц */
+    padding: 5px 10px;
+    margin: 0 2px;
+    text-decoration: none;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0; /* Фон элементов пагинации при наведении */
+}
+
+.pagination .current {
+    background-color: #428bca; /* Фон текущей страницы */
+    color: #fff; /* Цвет текста на текущей странице */
+}
+
+.pagination .disabled {
+    color: #cccccc; /* Цвет текста неактивных элементов (если есть) */
+}
+
+.pagination .next,
+.pagination .prev {
+    font-weight: bold;
+}
+
+.pagination .ellipsis {
+    border: none;
+    pointer-events: none;
+}
+
+.top_news {
+    width: 350px;
+}
+
+.top_news_item {
+    margin-bottom: 5px;
+}
+
+.top_news_item:last-child {
+    margin-bottom: 0;
+}
+
+.top_news_title {
+    margin-bottom: 10px;
+}
+
+.top_news_views {
+    font-style: italic;
+}
+
+.search-input {
+    width: 200px;
+    height: 50px;
+    padding: 5px;
+    font-size: 36px;
+}
+
+.regular_categories_list {
+    display: flex;
+    justify-content: center;
+}
+
+.regular_categories_list {
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.regular_categories_list a {display: block; color: #000; padding: 10px;
+font-weight: bold; text-transform: uppercase; font-size: 12px;}
+
+.regular_categories_list a.active { color: #ff0000; text-decoration: none; }
+
+.video_container {
+	margin-bottom: 5px;
+}

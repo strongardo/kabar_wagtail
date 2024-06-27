@@ -1,0 +1,11 @@
+{% load wagtailroutablepage_tags %}
+
+
+{% for category in categories %}
+<li>
+    <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}"
+        class="{% if category == active_category %}active{% endif %}">
+        {{ category.name }}
+    </a>
+</li>
+{% endfor %}

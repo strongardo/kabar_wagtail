@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags wagtail_cache %}
+
+{% block content %}
+{% wagtailpagecache 3600 post %}
+<div id="main">
+    <div id="content" class="left">
+        <div class="projects">
+            <h1>{{ page.title }}</h1>
+            <p class="meta">{{ page.pub_date|date:"d/m/y H:i" }}</p>
+
+            <h3>Просмотров: </h3>
+            <p id="views-count" style="margin-bottom: 20px">Загрузка...</p>
+
+            {% if page.category %}
+            {% with category=page.category %}
+            <h3>Категория:</h3>
+            <!-- Шаблонный тег Wagtail, используемый для генерации URL страницы,
+            использующей RoutablePageMixin. Здесь генерирует URL для метода представления
+            materials_by_category на странице CategoryPage, передавая ему значение category.slug-->
+            <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
+                {{ category.name }}
+            </a>
+            {% endwith %}
+            {% endif %}
+
+
+            {% if page.author %}
+            <h3 style="margin-top: 20px">Автор:</h3>
+            <p>{{ page.author.name }}</p>
+            {% endif %}
+
+            {% if page.fb_video_url %}
+            <!-- Видео с Facebook -->
+            <!-- Load Facebook SDK for JavaScript -->
+            <div id="fb-root"></div>
+            <script async defer src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
+            <div class="video_container fb-video"
+                 data-href="{{ page.fb_video_url }}" data-width="730" data-show-text="false">
+                <div class="fb-xfbml-parse-ignore"></div>
+            </div>
+            {% endif %}
+
+            {% if page.video_url %}
+            <!-- Видео с YouTube или Vimeo -->
+            <iframe width="730" height="410" src="{{ page.video_url }}" frameborder="0"
+                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+            {% endif %}
+
+            {% if page.video_file %}
+            Встраивание загруженного видеофайла
+            <video controls width="730">
+                <source src="{{ page.video_file.url }}" type="video/mp4">
+                Ваш браузер не поддерживает видео тег.
+            </video>
+            {% endif %}
+
+
+            <ul class="image-list">
+                {% for item in page.gallery_images.all %}
+                <li>
+
+                    <!--Шаблонный тег для обработки и отображения изображения в Wagtail
+                    fill означает, что изображение будет обрезано или масштабировано так,
+                    чтобы полностью заполнить указанные размеры.-->
+                    {% image item.image fill-320x240 %}
+
+                    <p>{{ item.caption }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+
+
+            <div class="content">
+                <!--Фильтр richtext используется всегда, при отображении содержимого поля RichTextField-->
+                {{ page.body|richtext }}
+            </div>
+
+            {% with tags=page.tags.all %}
+            {% if tags %}
+            <div class="tags">
+                <h3>Теги</h3>
+                {% for tag in tags %}
+                <!--http://127.0.0.1:8000/tags/?tag=Футбол-->
+                <a href="{% slugurl 'tags' %}?tag={{ tag }}">
+                    <button type="button">{{ tag }}</button>
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            <!-- uSocial -->
+            <script async src="https://usocial.pro/usocial/usocial.js?v=6.1.4" data-script="usocial"
+                    charset="utf-8"></script>
+            <div class="uSocial-Share" data-pid="ec48625e2b29f823bb3a85c89bdb96b5" data-type="share"
+                 data-options="round-rect,style1,default,absolute,horizontal,size48,eachCounter0,counter0"
+                 data-social="fb,vk,twi,ok" data-mobile="sms"></div>
+            <!-- /uSocial -->
+
+            <p><a href="{{ page.get_parent.url }}">Все материалы</a></p>
+
+            <div class="similar-materials">
+                <h2>Похожие материалы</h2>
+                <ul>
+                    {% for post in similar_materials %}
+                    <li>
+                        {% with post=post.specific %}
+                        <a href="{% pageurl post %}">
+
+                            {% with image=post.main_image %}
+                            {% if image %}
+                            {% image image fill-80x60 %}
+                            {% endif %}
+                            {% endwith %}
+
+                            {{ post.title }}
+                            <span style="margin-right: 10px">{{ post.pub_date|date:"d/m/y H:i" }}</span>
+                            <span class="top_news_views">{{ post.view_count }} просмотров</span>
+
+                            {% if post.category %}
+                            {% with category=post.category %}
+                            <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
+                                {{ category.name }}
+                            </a>
+                            {% endwith %}
+                            {% endif %}
+                        </a>
+                        {% endwith %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+
+            <div class="adjacent-materials">
+                <p>Предыдущий материал: </p>
+                {% if prev_material %}
+                <a href="{% pageurl prev_material %}"> {{ prev_material.title }}</a>
+                {% endif %}
+
+                <p>Следующий материал: </p>
+                {% if next_material %}
+                <a href="{% pageurl next_material %}"> {{ next_material.title }}</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+    <div class="cl">&nbsp;</div>
+</div>
+{% endwagtailpagecache %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // ID материала, для которого нужно получить количество просмотров
+        var materialId = {{ page.id }};
+        var views_count = document.getElementById('views-count')
+
+        // Вызываем функцию(объявлена в основном js-файле) при загрузке страницы
+        fetchMaterialViews(materialId, views_count);
+    });
+</script>
+{% endblock %}
+
