@@ -1,0 +1,15 @@
+{% load wagtailcore_tags wagtailimages_tags home_tags %}
+
+{% with post=post.specific %}
+<li>
+    <a href="{% pageurl post %}" class="news-list-item">
+        <div class="news-image-block square-container">
+            {% image post.main_image original class="news-image" alt=post.main_image.title  %}
+        </div>
+        <div class="news-info">
+            <h4 class="news-title">{{ post.title }}</h4>
+            {% news_data_inner_author %}
+        </div>
+    </a>
+</li>
+{% endwith %}

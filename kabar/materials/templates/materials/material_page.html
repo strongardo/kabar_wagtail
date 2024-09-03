@@ -1,171 +1,304 @@
 {% extends "base.html" %}
 
-{% load wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags wagtail_cache %}
+{% load static wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags wagtail_cache materials_tags %}
+
+{% block extra_css %}
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+{% endblock %}
 
 {% block content %}
-{% wagtailpagecache 3600 post %}
-<div id="main">
-    <div id="content" class="left">
-        <div class="projects">
-            <h1>{{ page.title }}</h1>
-            <p class="meta">{{ page.pub_date|date:"d/m/y H:i" }}</p>
 
-            <h3>Просмотров: </h3>
-            <p id="views-count" style="margin-bottom: 20px">Загрузка...</p>
-
-            {% if page.category %}
-            {% with category=page.category %}
-            <h3>Категория:</h3>
-            <!-- Шаблонный тег Wagtail, используемый для генерации URL страницы,
-            использующей RoutablePageMixin. Здесь генерирует URL для метода представления
-            materials_by_category на странице CategoryPage, передавая ему значение category.slug-->
-            <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
-                {{ category.name }}
-            </a>
-            {% endwith %}
-            {% endif %}
-
-
-            {% if page.author %}
-            <h3 style="margin-top: 20px">Автор:</h3>
-            <p>{{ page.author.name }}</p>
-            {% endif %}
-
-            {% if page.fb_video_url %}
-            <!-- Видео с Facebook -->
-            <!-- Load Facebook SDK for JavaScript -->
-            <div id="fb-root"></div>
-            <script async defer src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
-            <div class="video_container fb-video"
-                 data-href="{{ page.fb_video_url }}" data-width="730" data-show-text="false">
-                <div class="fb-xfbml-parse-ignore"></div>
+<main class="margin-element material-page-main">
+    <div class="container">
+        <div class="upper-left-side-content-block">
+            <h1 class="page-article-title">{{ page.title }}</h1>
+            <div class="page-article-data">
+                {% if page.category %}
+                {% with category=page.category %}
+                <span class="page-article-data-item">{{ category.name }}</span>
+                {% endwith %}
+                {% endif %}
+                <span class="vl"></span>
+                <span class="page-article-data-item">
+              <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 10"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                        d="M13.2244 4.86711C13.2058 4.82445 12.7508 3.81547 11.7347 2.79938C10.7919 1.85766 9.17207 0.734375 6.79973 0.734375C4.42738 0.734375 2.80754 1.85766 1.86472 2.79938C0.848631 3.81547 0.393631 4.82281 0.375037 4.86711C0.356341 4.90911 0.34668 4.95457 0.34668 5.00055C0.34668 5.04652 0.356341 5.09198 0.375037 5.13398C0.393631 5.17609 0.848631 6.18508 1.86472 7.20117C2.80754 8.14289 4.42738 9.26562 6.79973 9.26562C9.17207 9.26562 10.7919 8.14289 11.7347 7.20117C12.7508 6.18508 13.2058 5.17773 13.2244 5.13398C13.2431 5.09198 13.2528 5.04652 13.2528 5.00055C13.2528 4.95457 13.2431 4.90911 13.2244 4.86711ZM6.79973 8.60938C5.08363 8.60938 3.58519 7.98484 2.34543 6.75383C1.82574 6.23731 1.38596 5.64621 1.04058 5C1.38586 4.3539 1.82566 3.76296 2.34543 3.24672C3.58519 2.01516 5.08363 1.39062 6.79973 1.39062C8.51582 1.39062 10.0143 2.01516 11.254 3.24672C11.7738 3.76296 12.2136 4.3539 12.5589 5C12.2105 5.66773 10.4638 8.60938 6.79973 8.60938ZM6.79973 2.48438C6.30218 2.48438 5.81581 2.63191 5.40212 2.90833C4.98843 3.18475 4.66599 3.57764 4.47559 4.03731C4.28519 4.49698 4.23537 5.00279 4.33244 5.49077C4.4295 5.97876 4.66909 6.427 5.02091 6.77882C5.37273 7.13063 5.82097 7.37022 6.30895 7.46729C6.79693 7.56435 7.30274 7.51454 7.76241 7.32413C8.22208 7.13373 8.61497 6.8113 8.89139 6.39761C9.16781 5.98391 9.31535 5.49754 9.31535 5C9.31448 4.33308 9.04916 3.69373 8.57758 3.22214C8.106 2.75056 7.46664 2.48524 6.79973 2.48438ZM6.79973 6.85938C6.43198 6.85938 6.07248 6.75033 5.76671 6.54601C5.46094 6.3417 5.22262 6.05131 5.08189 5.71155C4.94115 5.3718 4.90433 4.99794 4.97608 4.63725C5.04782 4.27657 5.22491 3.94526 5.48495 3.68522C5.74499 3.42518 6.0763 3.2481 6.43698 3.17635C6.79766 3.10461 7.17152 3.14143 7.51128 3.28216C7.85103 3.42289 8.14143 3.66121 8.34574 3.96699C8.55005 4.27276 8.6591 4.63225 8.6591 5C8.6591 5.49314 8.4632 5.96608 8.1145 6.31478C7.7658 6.66348 7.29286 6.85938 6.79973 6.85938Z"
+                        fill="rgba(15, 15, 15, 1)"
+                        stroke="rgba(15, 15, 15, 1)"
+                        stroke-width="0.5"
+                />
+              </svg>
+              <span id="views-count">Загрузка...</span>
+            </span>
+                <span class="vl"></span>
+                <span class="page-article-data-item">
+              <svg
+                      width="11"
+                      height="12"
+                      viewBox="0 0 11 12"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                        d="M2.4 5.4H3.6V6.6H2.4V5.4ZM10.8 2.4V10.8C10.8 11.46 10.26 12 9.6 12H1.2C0.88174 12 0.576515 11.8736 0.351472 11.6485C0.126428 11.4235 0 11.1183 0 10.8L0.00599999 2.4C0.00599999 1.74 0.534 1.2 1.2 1.2H1.8V0H3V1.2H7.8V0H9V1.2H9.6C10.26 1.2 10.8 1.74 10.8 2.4ZM1.2 3.6H9.6V2.4H1.2V3.6ZM9.6 10.8V4.8H1.2V10.8H9.6ZM7.2 6.6H8.4V5.4H7.2V6.6ZM4.8 6.6H6V5.4H4.8V6.6Z"
+                        fill="rgba(15, 15, 15, 1)"
+                />
+              </svg>
+              {{ page.pub_date|date:"d F Y" }}
+            </span>
             </div>
-            {% endif %}
+        </div>
+        <div class="margin-element aside-page-inner material-page-main">
 
-            {% if page.video_url %}
-            <!-- Видео с YouTube или Vimeo -->
-            <iframe width="730" height="410" src="{{ page.video_url }}" frameborder="0"
-                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen>
-            </iframe>
-            {% endif %}
-
-            {% if page.video_file %}
-            Встраивание загруженного видеофайла
-            <video controls width="730">
-                <source src="{{ page.video_file.url }}" type="video/mp4">
-                Ваш браузер не поддерживает видео тег.
-            </video>
-            {% endif %}
+            <div class="left-side-content-block">
+                <article class="page-article-block margin-element">
+                    <div class="page-article-cover-parent">
 
 
-            <ul class="image-list">
-                {% for item in page.gallery_images.all %}
-                <li>
+                        {% if page.video_file or page.video_url or page.fb_video_url %}
+                        <div class="video-block" style="position: relative;">
+                            <div class="darker-filter">
+                                {% image page.main_image original class="video-thumbnail" alt='Видео' %}
+                                <button type="button" class="video-play-button">
+                                    <img
+                                            src="{% static 'images/vectors/icons/video_icon.svg' %}"
+                                            alt="play button"
+                                    />
+                                </button>
+                            </div>
 
-                    <!--Шаблонный тег для обработки и отображения изображения в Wagtail
-                    fill означает, что изображение будет обрезано или масштабировано так,
-                    чтобы полностью заполнить указанные размеры.-->
-                    {% image item.image fill-320x240 %}
+                            {% if page.video_file %}
+                            <div class="material-videos">
+                                <video controls>
+                                    <source src="{{ page.video_file.file.url }}" type="video/mp4">
+                                    Ваш браузер не поддерживает видео тег.
+                                </video>
+                            </div>
 
-                    <p>{{ item.caption }}</p>
-                </li>
-                {% endfor %}
-            </ul>
+                            {% elif page.video_url %}
+                            <iframe
+                                    src="{{ page.video_url }}"
+                                    allowfullscreen
+                                    class="material-videos"
+                            ></iframe>
 
-
-            <div class="content">
-                <!--Фильтр richtext используется всегда, при отображении содержимого поля RichTextField-->
-                {{ page.body|richtext }}
-            </div>
-
-            {% with tags=page.tags.all %}
-            {% if tags %}
-            <div class="tags">
-                <h3>Теги</h3>
-                {% for tag in tags %}
-                <!--http://127.0.0.1:8000/tags/?tag=Футбол-->
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}">
-                    <button type="button">{{ tag }}</button>
-                </a>
-                {% endfor %}
-            </div>
-            {% endif %}
-            {% endwith %}
-
-            <!-- uSocial -->
-            <script async src="https://usocial.pro/usocial/usocial.js?v=6.1.4" data-script="usocial"
-                    charset="utf-8"></script>
-            <div class="uSocial-Share" data-pid="ec48625e2b29f823bb3a85c89bdb96b5" data-type="share"
-                 data-options="round-rect,style1,default,absolute,horizontal,size48,eachCounter0,counter0"
-                 data-social="fb,vk,twi,ok" data-mobile="sms"></div>
-            <!-- /uSocial -->
-
-            <p><a href="{{ page.get_parent.url }}">Все материалы</a></p>
-
-            <div class="similar-materials">
-                <h2>Похожие материалы</h2>
-                <ul>
-                    {% for post in similar_materials %}
-                    <li>
-                        {% with post=post.specific %}
-                        <a href="{% pageurl post %}">
-
-                            {% with image=post.main_image %}
-                            {% if image %}
-                            {% image image fill-80x60 %}
+                            {% elif page.fb_video_url %}
+                            <div class="material-videos">
+                                <!-- Видео с Facebook -->
+                                <!-- Load Facebook SDK for JavaScript -->
+                                <div id="fb-root"></div>
+                                <script async defer
+                                        src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
+                                <div class="video_container fb-video"
+                                     data-href="{{ page.fb_video_url }}" data-width="auto" data-show-text="false">
+                                    <div class="fb-xfbml-parse-ignore"></div>
+                                </div>
+                            </div>
                             {% endif %}
-                            {% endwith %}
+                        </div>
 
-                            {{ post.title }}
-                            <span style="margin-right: 10px">{{ post.pub_date|date:"d/m/y H:i" }}</span>
-                            <span class="top_news_views">{{ post.view_count }} просмотров</span>
+                        {% elif page.gallery_images.count > 1 %}
+                        <div class="swiper material-slider">
+                            <div class="swiper-wrapper">
+                                {% for item in page.gallery_images.all %}
+                                <div class="swiper-slide">
+                                    <div class="darker-filter">
+                                        {% image item.image original class="swiper-media" alt="{{ item.title }}" %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
 
-                            {% if post.category %}
-                            {% with category=post.category %}
-                            <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
-                                {{ category.name }}
-                            </a>
-                            {% endwith %}
-                            {% endif %}
+                            <div class="swiper-button-next">
+                                <img
+                                        src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                        alt="Next"
+                                />
+                            </div>
+
+                            <div class="swiper-button-prev">
+                                <img
+                                        src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                        alt="Previous"
+                                />
+                            </div>
+                        </div>
+
+                        {% elif page.main_image %}
+                        <div class="darker-filter">
+                            {% image page.main_image original class="page-article-cover" alt=page.main_image.title %}
+                        </div>
+                        {% endif %}
+
+
+                    </div>
+                    <div class="page-article-data">
+                <span class="page-article-data-item">
+                  <img
+                          src="{% static 'images/vectors/icons/copyright.svg' %}"
+                          alt="copyright icon"
+                  />
+                  Кабар
+                </span>
+                        {% if page.author %}
+                        <span class="vl"></span>
+                        <a href="{% routablepageurl author_page 'materials_by_author' author_slug=page.author.slug %}">
+                            <span class="page-article-data-item">
+                            {{ page.author.name }}
+                            </span>
                         </a>
-                        {% endwith %}
+                        {% endif %}
+                    </div>
+
+                    <div class="share-article-block">
+                        <div class="share-article-block">
+                            <!-- uSocial -->
+                            <script async src="https://usocial.pro/usocial/usocial.js?uid=8b609237def46898&v=6.1.5"
+                                    data-script="usocial" charset="utf-8"></script>
+                            <div class="uSocial-Share" data-pid="541f8070702ae50db09280add0be935d" data-type="share"
+                                 data-options="round,style1,default,absolute,horizontal,size32,counter0,mobile_position_right"
+                                 data-social="fb,twi,telegram,wa"></div>
+                            <!-- /uSocial -->
+                        </div>
+                    </div>
+
+                    {% if page.author %}
+                    <a class="page-author-link"
+                       href="{% routablepageurl author_page 'materials_by_author' author_slug=page.author.slug %}">
+                        <div class="page-author-block">
+                            <img
+                                    src="{{ page.author.profile_image.url }}"
+                                    alt="{{ page.author.name }}"
+                            />
+                            <div class="author-info">
+                                <h4 class="author-name"> {{ page.author.name }}</h4>
+                                <span class="author-materials">Все материалы</span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endif %}
+
+                    <div class="page-article-text-block page-article-text">
+                        {{ page.body|richtext }}
+                    </div>
+
+                    <div class="print-article-block">
+                        <div class="share-article-block">
+                            <!-- uSocial -->
+                            <script async src="https://usocial.pro/usocial/usocial.js?uid=8b609237def46898&v=6.1.5"
+                                    data-script="usocial" charset="utf-8"></script>
+                            <div class="uSocial-Share" data-pid="541f8070702ae50db09280add0be935d" data-type="share"
+                                 data-options="round,style1,default,absolute,horizontal,size32,counter0,mobile_position_right"
+                                 data-social="fb,twi,telegram,wa"></div>
+                            <!-- /uSocial -->
+                        </div>
+                        <button type="button" class="print-button">печать</button>
+                    </div>
+                </article>
+            </div>
+
+
+            <aside class="right-side-content-block">
+                <div class="popular-news-block">
+                    <div class="section-block">
+                        <h3 class="section-title arrow">Самые популярные</h3>
+                    </div>
+                    <div class="popular-news-block-inner">
+                        {% for post in top_news %}
+                        {% popular_news_item_block %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if banner %}
+                <div class="ad-block">
+                    <div class="ad-inner">
+                        <a href="{% url 'banner_click' banner.id %}" target="_blank">
+                            <span class="news-category ad-category">Реклама</span>
+                            <div class="darker-filter">
+                                {% image banner.image original %}
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+            </aside>
+        </div>
+        <div class="lower-content-block">
+            <div class="theme-block section-block margin-element">
+                <h3 class="arrow section-title">По теме</h3>
+                <ul class="news-list">
+                    {% for post in similar_materials %}
+                    {% similar_news_item_block %}
+                    {% endfor %}
+                </ul>
+
+                {% with tags=page.tags.all %}
+                {% if tags %}
+                <ul class="category-news-list">
+                    {% for tag in tags %}
+                    <li class="category-news-list-item">
+                        <a href="{% slugurl 'tags' %}?tag={{ tag }}">{{ tag }}</a>
                     </li>
                     {% endfor %}
                 </ul>
+                {% endif %}
+                {% endwith %}
+
             </div>
 
+            <div class="company-news-block section-block margin-element">
+                <h3 class="section-title arrow">Новости компаний</h3>
 
-            <div class="adjacent-materials">
-                <p>Предыдущий материал: </p>
-                {% if prev_material %}
-                <a href="{% pageurl prev_material %}"> {{ prev_material.title }}</a>
-                {% endif %}
-
-                <p>Следующий материал: </p>
-                {% if next_material %}
-                <a href="{% pageurl next_material %}"> {{ next_material.title }}</a>
-                {% endif %}
+                {% for post in business_materials %}
+                {% mini_news_item_block %}
+                {% endfor %}
             </div>
-
         </div>
     </div>
-    <div class="cl">&nbsp;</div>
-</div>
-{% endwagtailpagecache %}
+</main>
 
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // ID материала, для которого нужно получить количество просмотров
         var materialId = {{ page.id }};
         var views_count = document.getElementById('views-count')
 
-        // Вызываем функцию(объявлена в основном js-файле) при загрузке страницы
+        // Функция для получения и отображения количества просмотров
+        function fetchMaterialViews(material_id, views_element) {
+            // Путь к Django view, который обрабатывает запрос
+            const url = `/materials/get_views/${material_id}/`;
+
+            // Отправляет AJAX запрос к серверу
+            fetch(url)
+                // Обрабатывает ответ от сервера. fetch возвращает промис, который решается объектом Response.
+                // Метод .json() этого объекта читает ответ и преобразует его из формата JSON в JavaScript объект.
+                .then(response => response.json())
+                // В data будет находиться JavaScript объект, полученный в предыдущем then()
+                .then(data => {
+                    // Обновляет содержимое на странице количеством просмотров
+                    views_element.textContent = data.views_count;
+                })
+                // Перехватывает ошибки, которые могли произойти на любом из предыдущих этапов
+                .catch(error => console.error('Ошибка:', error));
+        }
+
         fetchMaterialViews(materialId, views_count);
     });
 </script>
 {% endblock %}
-

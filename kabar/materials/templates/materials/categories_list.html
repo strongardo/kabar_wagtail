@@ -1,0 +1,19 @@
+{% load wagtailroutablepage_tags %}
+
+
+{% for category in categories %}
+<li class="category-list-item">
+    <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}" class="category-link">
+        {{ category.name }}
+    </a>
+</li>
+{% endfor %}
+
+<!--
+Этот шаблон создает навигационное меню по категориям, позволяя пользователям переходить к списку материалов,
+отфильтрованных по интересующей их категории.
+
+Тег routablepageurl генерирует URL для маршрута, определенного в экземпляре RoutablePageMixin (category_page),
+используя имя маршрута (materials_by_category) и аргументы (category.slug).
+Это позволяет создать ссылку на страницу, показывающую все материалы текущей категории.
+-->

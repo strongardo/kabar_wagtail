@@ -1,0 +1,15 @@
+<div class="other-links-item">
+    <a href="{{ post.url }}" target="_blank" rel="nofollow">
+        <span class="news-category">{{ post.name }}</span>
+        <div class="darker-filter">
+            {% if post.image %}
+            <img
+                    src="{{ post.image.url }}"
+                    alt="{{ post.name }}"
+            />
+            {% else %}
+            <p>No image available</p>
+            {% endif %}
+        </div>
+    </a>
+</div>

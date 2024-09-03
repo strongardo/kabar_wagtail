@@ -1,0 +1,17 @@
+{% load wagtailroutablepage_tags materials_tags wagtail_cache %}
+{% wagtailcache 86400 "global_footer" %}
+<div id="footer">
+    <div style="display: flex; column-gap: 40px; align-items: center">
+
+        {% top_news_list %}
+
+        <form style="width: 200px;" action="{% url 'search' %}" method="get">
+            <input class="search-input" type="text" name="query" {% if search_query %} value="{{ search_query }}" {% endif %}>
+            <input type="submit" value="Поиск" style="margin-top: 10px; width: 100px; height: 30px;">
+        </form>
+
+    </div>
+
+    <p class="copy right">Copyright &copy; 2024 </p>
+</div>
+{% endwagtailcache %}

@@ -1,106 +1,365 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static wagtailcore_tags wagtailimages_tags materials_tags home_tags wagtail_cache %}
 
-{% load wagtailcore_tags wagtailimages_tags %}
-
-{% block body_class %}template-homepage{% endblock %}
+{% block extra_css %}
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+{% endblock %}
 
 {% block content %}
-<div id="main">
-    <div id="content" class="left">
-        <div class="projects">
-            <h2 style="margin-bottom: 10px;">Главные новости</h2>
-            <ul>
-                {% for post in main_materials %}
-                <li class="">
-                    <a href="{% pageurl post %}">
-                        {% with post=post.specific %}
-
-                        {% with image=post.main_image %}
-                        {% if image %}
-                        {% image image fill-80x60 %}
-                        {% endif %}
-                        {% endwith %}
-
-                        {{ post.title }}
-
-                        {% endwith %}
-                    </a>
-                </li>
-                {% endfor %}
+<main class="main-block margin-element">
+    {% wagtailcache 86400 basic_categories %}
+    <nav class="category-nav">
+        <div class="container">
+            <ul class="category-list">
+                {% basic_categories_list %}
             </ul>
+        </div>
+    </nav>
+    {% endwagtailcache %}
 
-            <div class="video-section">
-                <h2 style="margin-bottom: 10px;">Видео</h2>
-                {% if last_video_material.video_url %}
-                <!-- Видео с YouTube или Vimeo -->
-                <iframe width="430" height="240" src="{{ last_video_material.video_url }}" frameborder="0"
-                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                </iframe>
-
-                {% elif last_video_material.fb_video_url %}
-                <!-- Видео с Facebook -->
-                <!-- Load Facebook SDK for JavaScript -->
-                <div id="fb-root"></div>
-                <script async defer src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
-                <div class="video_container fb-video"
-                     data-href="{{ last_video_material.fb_video_url }}" data-width="430" data-show-text="false">
-                    <div class="fb-xfbml-parse-ignore"></div>
+    <div class="late-news-block">
+        <div class="container">
+            <div class="late-news-grid">
+                <div class="late-news-grid-block late-news-slider swiper">
+                    <div class="swiper-wrapper">
+                        {% for post in main_materials %}
+                        {% late_news_slide_block %}
+                        {% endfor %}
+                    </div>
+                    <div class="swiper-pagination"></div>
                 </div>
-
-                {% elif last_video_material.video_file %}
-                <video controls width="430" height="240">
-                    <source src="{{ last_video_material.video_file.url }}" type="video/mp4">
-                    Ваш браузер не поддерживает видео тег.
-                </video>
-                {% endif %}
-
-                <ul>
-                    {% for post in next_last_video_materials %}
-                    <li class="">
-                        <a href="{% pageurl post %}">
-                            {% with post=post.specific %}
-
-                            {% with image=post.main_image %}
-                            {% if image %}
-                            {% image image fill-80x60 %}
-                            {% endif %}
-                            {% endwith %}
-
-                            {{ post.title }} | {{ post.pub_date }}
-
-                            {% endwith %}
-                        </a>
-                    </li>
-                    {% empty %}
-                    <li>Нет материалов с видео</li>
-                    {% endfor %}
-                </ul>
-            </div>
-
-            <div class="banners">
-                <h2 style="margin-bottom: 10px;">Баннеры</h2>
-                {% if top_banner %}
-                <a href="{% url 'banner_click' top_banner.id %}" target="_blank" style="display: block;">
-                    {% image top_banner.image width-730 %}
-                </a>
-                {% endif %}
-
-                {% if bottom_banner %}
-                <a href="{% url 'banner_click' bottom_banner.id %}" target="_blank" style="display: block;">
-                    {% image bottom_banner.image width-730 %}
-                </a>
-                {% endif %}
-
-                {% if aside_banner %}
-                <a href="{% url 'banner_click' aside_banner.id %}" target="_blank" style="display: block;">
-                    {% image aside_banner.image width-300 %}
-                </a>
-                {% endif %}
+                {% for post in important_materials %}
+                {% late_news_extra_block %}
+                {% endfor %}
             </div>
         </div>
     </div>
-    <div class="cl">&nbsp;</div>
-</div>
+
+    <div class="news-feed-block margin-element">
+        <div class="container">
+            <div class="news-feed-flex">
+                <div class="news-feed news-feed-inner">
+                    <a href="/news" class="news-feed-link">
+                        <h3 class="section-title arrow">Лента новостей</h3>
+                    </a>
+                    <div class="line"></div>
+                    <ul class="news-list">
+                        {% for post in last_materials %}
+                        {% news_feed_item_block %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="news-popular news-feed-inner">
+                    <h3 class="section-title arrow">Cамое популярное</h3>
+                    <ul class="news-list">
+                        {% for post in popular_materials %}
+                        {% popular_news_item_block %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="president-news-block margin-element">
+        <div class="container">
+            <div class="section-block multiple-sections">
+                <h3 class="section-title" id="president-tab">Президент</h3>
+                <h3 class="section-title" id="parliament-tab">Парламент</h3>
+                <h3 class="section-title" id="government-tab">Кабмин</h3>
+            </div>
+
+            <div class="president-news-grid" id="president-block">
+                {% with post=first_president_material %}
+                {% multiple_news_main_block %}
+                {% endwith %}
+
+                {% for post in president_materials %}
+                {% multiple_news_block %}
+                {% endfor %}
+            </div>
+
+            <div class="president-news-grid visually-hidden" id="parliament-block">
+                {% with post=first_parliament_material %}
+                {% multiple_news_main_block %}
+                {% endwith %}
+
+                {% for post in parliament_materials %}
+                {% multiple_news_block %}
+                {% endfor %}
+            </div>
+
+            <div class="president-news-grid visually-hidden" id="government-block">
+                {% with post=first_government_material %}
+                {% multiple_news_main_block %}
+                {% endwith %}
+
+                {% for post in government_materials %}
+                {% multiple_news_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="culture-news-block margin-element">
+        <div class="container">
+            {% wagtailcache 86400 regular_categories %}
+            <nav class="category-nav margin-element">
+                <ul class="category-list">
+                    {% regular_categories_list %}
+                </ul>
+            </nav>
+            {% endwagtailcache %}
+
+            <div class="mini-news-block">
+                {% for post in regular_categories_materials %}
+                {% mini_news_item_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="business-news-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <a href="/cat/business/"><h3 class="section-title">Бизнес</h3></a>
+            </div>
+            <div class="business-news-grid">
+                {% for post in business_materials %}
+                {% multiple_news_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if banner %}
+    <div class="ad-block margin-element">
+        <div class="container">
+            <div class="ad-inner">
+                <a href="{% url 'banner_click' banner.id %}" target="_blank">
+                    <span class="news-category ad-category">Реклама</span>
+                    <div class="darker-filter">
+                        {% image banner.image original %}
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="analytics-press-news-block margin-element">
+        <div class="container">
+            <div class="analytics-press-flex">
+                <div class="section-block multiple-sections">
+                    <a href="/cat/analytics/"><h3 class="section-title">Аналитика</h3></a>
+                    <a href="/cat/press_center/"><h3 class="section-title">Пресс-Центр</h3></a>
+                </div>
+                <div class="analytics-block analytics-press-item">
+                    <div class="section-block">
+                        <h3 class="section-title">Аналитика</h3>
+                    </div>
+                    <div class="news-block">
+                        {% for post in analytics_materials %}
+                        {% primary_news_item_block %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="press-centre-block analytics-press-item">
+                    <div class="section-block">
+                        <a href="./pages/press_centre_page.html">
+                            <h3 class="section-title">Пресс-Центр</h3>
+                        </a>
+                    </div>
+                    <div class="news-block">
+                        {% for post in press_center_materials %}
+                        {% primary_news_item_block %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="media-news-block margin-element">
+        <div class="container">
+            <div class="section-block multiple-sections">
+                <a href="/cat/interview/"><h3 class="section-title">Интервью</h3></a>
+                <h3 class="section-title">Фоторепортаж</h3>
+                <h3 class="section-title">Видеорепортаж</h3>
+            </div>
+            <div class="media-inner">
+                <div class="interview-block media-grid">
+                    {% for post in interview_materials %}
+                    {% primary_news_item_block %}
+                    {% endfor %}
+                </div>
+                <div class="photo-block media-grid">
+                    {% for post in photo_report_materials %}
+                    {% primary_news_item_block %}
+                    {% endfor %}
+                </div>
+                <div class="video-block media-grid">
+                    {% for post in video_report_materials %}
+                    {% primary_news_item_block %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="regions-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">Регионы</h3>
+            </div>
+
+            {% wagtailcache 86400 region_categories %}
+            <nav class="category-nav culture-category-nav">
+                <ul class="category-list">
+                    {% region_categories_list %}
+                </ul>
+            </nav>
+            {% endwagtailcache %}
+
+            <div class="mini-news-block">
+                {% for post in region_materials %}
+                {% mini_news_item_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="tourism-news-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">Туризм в Кыргызстане</h3>
+            </div>
+
+            <div class="tourism-inner">
+                {% with post=tourism_material %}
+                {% primary_news_item_block %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+
+    <div class="personnel-and-appointments-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">кадры и назначения</h3>
+            </div>
+
+            <div class="personnel-and-appointments-inner">
+                {% for post in personnel_materials %}
+                {% primary_news_item_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="bishkek-events-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">мероприятия бишкека</h3>
+            </div>
+
+            <div class="bishkek-events-inner">
+                {% for post in bishkek_events_materials %}
+                {% primary_news_item_block %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="other-links-block margin-element">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">Сторонние ссылки</h3>
+            </div>
+
+            {% wagtailcache 2592000 other_links %}
+            <div class="other-links-inner">
+                {% for post in other_links %}
+                {% other_links_item_block %}
+                {% endfor %}
+            </div>
+            {% endwagtailcache %}
+        </div>
+    </div>
+
+    <div class="partners-block">
+        <div class="container">
+            <div class="section-block">
+                <h3 class="section-title">Наши партнеры</h3>
+            </div>
+        </div>
+
+        <div class="swiper partner-container">
+            <!-- Additional required wrapper -->
+            {% wagtailcache 2592000 partners %}
+            <div class="swiper-wrapper">
+                <!-- Slides -->
+                {% for post in partners %}
+                {% partners_slide_block %}
+                {% endfor %}
+            </div>
+            {% endwagtailcache %}
+
+            <div class="swiper-button-prev partner-buttons partner-button-prev">
+                <img src="{% static 'images/vectors/icons/pagination-arrow.svg' %}" alt="Влево"/>
+            </div>
+
+            <div class="swiper-button-next partner-buttons partner-button-next">
+                <img src="{% static 'images/vectors/icons/pagination-arrow.svg' %}" alt="Вправо"/>
+            </div>
+
+            <!-- If we need pagination -->
+
+            <!-- If we need navigation buttons -->
+            <!-- <div class="swiper-button-prev" style="background-color: red;"></div>
+            <div class="swiper-button-next" style="background-color: red;"></div> -->
+        </div>
+    </div>
+</main>
 {% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+    const presidentTab = document.querySelector('#president-tab');
+    const parliamentTab = document.querySelector('#parliament-tab');
+    const governmentTab = document.querySelector('#government-tab');
+
+    const presidentBlock = document.querySelector('#president-block');
+    const parliamentBlock = document.querySelector('#parliament-block');
+    const governmentBlock = document.querySelector('#government-block');
+
+    presidentTab.addEventListener('click', ()=>{
+        presidentBlock.classList.remove('visually-hidden')
+
+        parliamentBlock.classList.add('visually-hidden')
+        governmentBlock.classList.add('visually-hidden')
+    });
+
+    parliamentTab.addEventListener('click', ()=>{
+        parliamentBlock.classList.remove('visually-hidden')
+
+        presidentBlock.classList.add('visually-hidden')
+        governmentBlock.classList.add('visually-hidden')
+    });
+
+    governmentTab.addEventListener('click', ()=>{
+        governmentBlock.classList.remove('visually-hidden')
+
+        parliamentBlock.classList.add('visually-hidden')
+        presidentBlock.classList.add('visually-hidden')
+    });
+
+</script>
+{% endblock %}
+
+

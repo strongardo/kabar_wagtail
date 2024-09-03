@@ -1,0 +1,23 @@
+{% load wagtailcore_tags home_tags %}
+
+<li>
+    <a href="{% pageurl post %}" class="news-list-item">
+        <div class="news-type-block">
+            {% if post.is_announcement %}
+            <span class="news-announcement news-type">Анонс</span>
+            {% endif %}
+            {% if post.is_live %}
+            <span class="news-live news-type">Live</span>
+            {% endif %}
+            {% if post.is_survey %}
+            <span class="news-survey news-type">Опрос</span>
+            {% endif %}
+        </div>
+        <div class="news-info">
+            <h4 class="news-title">
+                {{ post.title }}
+            </h4>
+            {% news_data_inner_author %}
+        </div>
+    </a>
+</li>

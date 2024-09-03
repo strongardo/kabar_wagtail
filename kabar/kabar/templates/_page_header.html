@@ -1,50 +1,181 @@
-<!--Объект request из контекста (определен по умолчанию в Django)-->
-<!--Содержит данные о текущем HTTP-запросе, в т.ч. request.path (полный путь к запрашиваемому ресурсу)-->
+{% load static wagtailroutablepage_tags materials_tags wagtail_cache %}
 
-<!--materials_tags загружает кастомные теги из файла materials_tags.py,
-который находится в директории templatetags приложения materials-->
-<!--wagtailsettings_tags загружает теги настроек(раздел в админке)-->
-{% load materials_tags wagtailsettings_tags wagtail_cache %}
 
-<!--Запрашивает из базы данных объекты всех настроек (отдельно вытащить курсы возможности нет)-->
-{% get_settings as settings %}
+<header class="header margin-element">
+    <div class="upper-header container">
+        <nav class="global-nav">
+            <a class="global-nav-item global-nav-logo-link" href="/">
+                <img
+                        class="logo-img"
+                        src="{% static 'images/logo.png' %}"
+                        alt="Kabar.kg logo"
+                />
+                <img
+                        class="logo-img-mobile"
+                        src="{% static 'images/logo_mobile.png' %}"
+                        alt="Kabar.kg logo"
+                />
+            </a>
+            <div class="global-nav-item global-nav-menu">
+                <ul class="media-list global-menu-item">
+                    <li>
+                        <a href="https://www.facebook.com/" target="_blank">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Facebook.svg' %}"
+                                    alt="Facebook link"
+                            />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://twitter.com/" target="_blank">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Twitter.svg' %}"
+                                    alt="Twitter link"
+                            />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.instagram.com" target="_blank">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Instagram.svg' %}"
+                                    alt="Instagram link"
+                            />
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.youtube.com" target="_blank">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Youtube.svg' %}"
+                                    alt="Youtube link"
+                            />
+                        </a>
+                    </li>
+                </ul>
 
-<div style="padding: 5px;">
-    {% with rates=settings.simple_pages.currencyexchangerates %}
-    {% wagtailcache 86400 currencyexchangerates %}
-    <span style="margin-right: 5px;"> <i class="fas fa-dollar-sign"></i> {{ rates.dollar_rate }}</span>
-    <span style="margin-right: 5px;"> <i class="fas fa-euro-sign"></i> {{ rates.euro_rate }}</span>
-    <span style="margin-right: 15px;"> <i class="fas fa-ruble-sign"></i> {{ rates.ruble_rate }}</span>
-    {% endwagtailcache %}
-    {% endwith %}
+                <form action="{% url 'search' %}" method="get">
+                    <input
+                            type="text"
+                            name="query"
+                            id="searchInputDesktop"
+                            class="global-nav-search global-menu-item search-input"
+                            placeholder="Найти"
+                    />
+                </form>
+                <ul class="language-list global-menu-item">
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button active-language"
+                                onclick="changeLanguage('rus')"
+                                id="rus"
+                        >
+                            Рус
+                        </button>
+                    </li>
+                    <li class="vl"></li>
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button"
+                                onclick="changeLanguage('kgz')"
+                                id="kgz"
+                        >
+                            Кыр
+                        </button>
+                    </li>
+                    <li class="vl"></li>
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button"
+                                onclick="changeLanguage('eng')"
+                                id="eng"
+                        >
+                            Eng
+                        </button>
+                    </li>
+                    <li class="vl"></li>
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button"
+                                onclick="changeLanguage('tr')"
+                                id="tr"
+                        >
+                            Tr
+                        </button>
+                    </li>
+                    <li class="vl"></li>
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button"
+                                onclick="changeLanguage('chinese')"
+                                id="chinese"
+                        >
+                            中文
+                        </button>
+                    </li>
+                    <li class="vl"></li>
+                    <li>
+                        <button
+                                type="button"
+                                class="language-select-button"
+                                onclick="changeLanguage('arab')"
+                                id="arab"
+                        >
+                            العربية
+                        </button>
+                    </li>
+                </ul>
+                <div class="language-select-block">
+                    <div class="more-category-popup"></div>
+                    <button class="language-select"></button>
+                    <ul class="language-select-list"></ul>
+                </div>
+            </div>
+        </nav>
+    </div>
 
-    {% now "d E Y | H:i" as current_date_time %}
-    <span  id="current-time">{{ current_date_time|lower }}</span>
-</div>
+    <div class="lower-header container">
+        <button class="hamburger-button" id="hamburger-button">
+            <img src="{% static 'images/vectors/icons/hamburger.svg' %}" alt="Burger icon"/>
+        </button>
+        <button class="search-button" id="search-button">
+            <img src="{% static 'images/vectors/icons/search.svg' %}" alt="Search icon"/>
+        </button>
+    </div>
 
-{% wagtailcache 86400 navigation %}
-<div id="navigation">
-    <ul>
-        <li>
-            <a href="/" class="{% if request.path == '/' %}active{% endif %}">Главная</a>
-        </li>
-
-        <li><a href="/news" class="{% if '/news/' in request.path %}active{% endif %}">Новости</a></li>
-
-        <li>
-            <a href="/ob-agentstve" class="{% if request.path == '/ob-agentstve/' %}active{% endif %}">Об агентстве</a>
-        </li>
-
-        <li>
-            <a href="/archive" class="{% if '/archive/' in request.path %}active{% endif %}">Архив</a>
-        </li>
-
-        {% basic_categories_list %}
-    </ul>
-
-</div>
-
-<ul class="regular_categories_list">
-    {% regular_categories_list %}
-</ul>
-{% endwagtailcache %}
+    <div class="header-popup-block burger-pop-up-block">
+        <div class="container">
+            <div class="buttons-block">
+                <img src="{% static 'images/vectors/icons/hamburger.svg' %}" alt="Burger icon"/>
+                <button class="close-button" id="close-burger-button">
+                    <img src="{% static 'images/vectors/icons/cross.svg' %}" alt="Close Icon"/>
+                </button>
+            </div>
+            {% wagtailcache 86400 mobile_nav %}
+            <ul class="header-popup-category-list">
+                {% all_categories_list %}
+            </ul>
+            {% endwagtailcache %}
+        </div>
+    </div>
+    <div class="header-popup-block search-pop-up-block">
+        <div class="container">
+            <div class="buttons-block">
+                <img src="{% static 'images/vectors/icons/search.svg' %}" alt="Search icon"/>
+                <button class="close-button" id="close-search-button">
+                    <img src="{% static 'images/vectors/icons/cross.svg' %}" alt="Close Icon"/>
+                </button>
+            </div>
+            <input
+                    type="text"
+                    name="search"
+                    id="searchInputMobile"
+                    class="search-pop-up-input search-input"
+                    placeholder="Найти"
+            />
+        </div>
+    </div>
+</header>

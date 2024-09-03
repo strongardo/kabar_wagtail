@@ -4,14 +4,17 @@
 
 {% block content %}
 {% wagtailpagecache 86400 simple_page %}
-<div id="main">
-    <div id="content" class="left">
-        <div class="projects">
-            <h1>{{ page.title }}</h1>
-            {{ page.body|richtext }}
+<main class="information-page-main margin-element">
+    <div class="container">
+        <div class="information-page-inner">
+            <div class="section-block">
+                <h1 class="section-title">{{ page.title }}</h1>
+            </div>
+            <article class="agency-information agency-information-text">
+                {{ page.body|richtext }}
+            </article>
         </div>
     </div>
-    <div class="cl">&nbsp;</div>
-</div>
+</main>
 {% endwagtailpagecache %}
 {% endblock %}

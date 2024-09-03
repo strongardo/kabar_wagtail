@@ -1,0 +1,16 @@
+{% load wagtailcore_tags wagtailimages_tags home_tags %}
+
+{% with post=post.specific %}
+<a class="news-link" href="{% pageurl post %}">
+    <div class="default-news-block">
+        <div class="darker-filter">
+            {% image post.main_image original class="news-image" alt=post.main_image.title %}
+        </div>
+        <span class="news-category">{{ post.category.name }}</span>
+        <div class="news-data-block">
+            <h2 class="news-title">{{ post.title }}</h2>
+            {% news_data_inner %}
+        </div>
+    </div>
+</a>
+{% endwith %}

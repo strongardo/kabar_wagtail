@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags %}
+
+{% block content %}
+
+<main class="press-centre-page about-journalist-page margin-element">
+    <div class="container">
+        <div class="aside-page-inner">
+            <div class="left-side-content-block">
+                {% if page_obj.number == 1 %}
+                <article class="page-article-block margin-element">
+                    <h1 class="page-article-title">{{ current_author.name }}</h1>
+
+                    <div class="author-info-block">
+                        <img
+                                class="author-image"
+                                src="{{ current_author.profile_image.url }}"
+                                alt="{{ current_author.name }}"
+                        />
+                        <p class="author-biography">{{ current_author.bio }}</p>
+                    </div>
+
+                </article>
+
+                {% else %}
+                <h1 class="page-article-title">{{ current_author.name }} </h1>
+
+                {% endif %}
+
+                <div class="articles-list-block">
+                    <ul class="index-news-list margin-element">
+                        {% for post in page_obj %}
+                        <li class="index-news-list-item">
+                            {% image post.main_image original alt=post.main_image.title class="auto-height_img" %}
+
+                            <div class="news-info">
+                                <h4 class="news-info-title">
+                                    <a href="{% pageurl post %}">{{ post.title }}</a>
+                                </h4>
+
+                                <div class="news-data-block-inner">
+				<span class="news-date news-info-item">
+				  <svg
+                          width="11"
+                          height="12"
+                          viewBox="0 0 11 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                  >
+					<path
+                            d="M2.4 5.4H3.6V6.6H2.4V5.4ZM10.8 2.4V10.8C10.8 11.46 10.26 12 9.6 12H1.2C0.88174 12 0.576515 11.8736 0.351472 11.6485C0.126428 11.4235 0 11.1183 0 10.8L0.00599999 2.4C0.00599999 1.74 0.534 1.2 1.2 1.2H1.8V0H3V1.2H7.8V0H9V1.2H9.6C10.26 1.2 10.8 1.74 10.8 2.4ZM1.2 3.6H9.6V2.4H1.2V3.6ZM9.6 10.8V4.8H1.2V10.8H9.6ZM7.2 6.6H8.4V5.4H7.2V6.6ZM4.8 6.6H6V5.4H4.8V6.6Z"
+                            fill="#555555"
+                    />
+				  </svg>
+				  {{ post.pub_date|date:"d F Y" }}
+				</span>
+                                    <span class="vl"></span>
+                                    <span class="news-time news-info-item">
+				  <svg
+                          width="13"
+                          height="12"
+                          viewBox="0 0 13 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                  >
+					<g clip-path="url(#clip0_4759_3792)">
+					  <path
+                              d="M6.7998 6.49951V4.49951M11.2998 2.99951L10.2998 1.99951M5.7998 0.999512H7.7998M6.7998 10.4995C4.59067 10.4995 2.7998 8.70865 2.7998 6.49951C2.7998 4.29037 4.59067 2.49951 6.7998 2.49951C9.00894 2.49951 10.7998 4.29037 10.7998 6.49951C10.7998 8.70865 9.00894 10.4995 6.7998 10.4995Z"
+                              stroke="#555555"
+                              stroke-width="1.2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                      />
+					</g>
+					<defs>
+					  <clipPath>
+						<rect
+                                width="12"
+                                height="12"
+                                fill="#555555"
+                                transform="translate(0.799805 -0.000488281)"
+                        />
+					  </clipPath>
+					</defs>
+				  </svg>
+				  {{ post.pub_date|time:"H:i" }}
+				</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% empty %}
+                        <p>Материалов пока нет у этого автора</p>
+                        {% endfor %}
+                    </ul>
+
+
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <div class="pagination-block margin-element">
+                        <!-- Предыдущая страница -->
+                        {% if page_obj.has_previous %}
+                        <a href="{% routablepageurl self 'materials_by_author' author_slug=current_author.slug page_number=page_obj.previous_page_number %}"
+                           class="pagination-control-button pagination-prev">
+                            <img
+                                    src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                    alt="pagination-arrow"
+                            />
+                        </a>
+                        {% else %}
+                        <a class="pagination-control-button pagination-prev">
+                            <img
+                                    src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                    alt="pagination-arrow"
+                            />
+                        </a>
+                        {% endif %}
+
+
+                        <!-- Номера страниц -->
+                        <div class="pagination-numbers">
+                            {% for num in page_obj.paginator.page_range %}
+                            {% if num == page_obj.number %}
+                            <a class="active">
+                                {{ num }}
+                            </a>
+                            {% else %}
+                            <a href="{% routablepageurl self 'materials_by_author' author_slug=current_author.slug page_number=num %}">
+                                {{ num }}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <!-- Следующая страница -->
+                        {% if page_obj.has_next %}
+                        <a href="{% routablepageurl self 'materials_by_author' author_slug=current_author.slug page_number=page_obj.next_page_number %}"
+                           class="pagination-control-button pagination-next">
+                            <img
+                                    src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                    alt="pagination-arrow"
+                            />
+                        </a>
+                        {% else %}
+                        <a class="pagination-control-button pagination-next">
+                            <img
+                                    src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                    alt="pagination-arrow"
+                            />
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+
+                </div>
+            </div>
+
+            <aside class="right-side-content-block">
+
+                {% if first_banner %}
+                <div class="ad-inner">
+                    <a href="{% url 'banner_click' first_banner.id %}" target="_blank">
+                        <span class="news-category ad-category">Реклама</span>
+                        <div class="darker-filter">
+                            {% image first_banner.image original %}
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+
+                {% if second_banner %}
+                <div class="ad-inner">
+                    <a href="{% url 'banner_click' second_banner.id %}" target="_blank">
+                        <span class="news-category ad-category">Реклама</span>
+                        <div class="darker-filter">
+                            {% image second_banner.image original %}
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+
+            </aside>
+
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}

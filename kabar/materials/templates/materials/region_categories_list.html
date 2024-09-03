@@ -1,0 +1,10 @@
+{% load wagtailroutablepage_tags %}
+
+
+{% for category in region_categories %}
+<li class="category-list-item">
+    <a  class="category-link" href="{% routablepageurl region_page 'materials_by_region' category.slug %}">
+        {{ category.name }}
+    </a>
+</li>
+{% endfor %}

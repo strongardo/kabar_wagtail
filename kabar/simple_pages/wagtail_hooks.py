@@ -1,9 +1,9 @@
 from wagtail import hooks
 from wagtail_modeladmin.options import ModelAdmin, modeladmin_register
-from .models import Banner
+from .models import Banner, PressConferenceAnnouncement
 
 
-# Таким образом можно зарегистрировать в админке лоюбую простую модель
+# Таким образом можно зарегистрировать в админке любую простую модель
 class BannerAdmin(ModelAdmin):
     model = Banner
     menu_label = 'Баннеры'
@@ -13,7 +13,17 @@ class BannerAdmin(ModelAdmin):
     list_editable = ('title', 'image', 'url', 'position')
 
 
+class PressConferenceAnnouncementAdmin(ModelAdmin):
+    model = PressConferenceAnnouncement
+    menu_label = 'Анонсы ПК'
+    menu_icon = 'group'
+    add_to_settings_menu = False
+    list_display = ('title', 'pub_date')
+    list_editable = ('pub_date', 'title', 'participants')
+
+
 modeladmin_register(BannerAdmin)
+modeladmin_register(PressConferenceAnnouncementAdmin)
 
 
 @hooks.register('construct_main_menu')

@@ -1,9 +1,8 @@
 import random
-
 from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, Q
 from django import forms
 from django.utils import timezone
 from django.http import HttpResponseRedirect
@@ -20,6 +19,8 @@ from wagtail.snippets.models import register_snippet
 from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from .utils import get_paginated_page
 from .forms import DateFilterForm
+from simple_pages.models import Banner
+from django.db.models import F
 
 
 # ХРАНИЛИЩЕ ДЛЯ ТЕГОВ
@@ -98,7 +99,7 @@ class MaterialsIndexPage(RoutablePageMixin, Page):
     def all_materials(self, request, page_number=1):
         materials = MaterialPage.get_materials()
 
-        page_obj = get_paginated_page(materials, page_number, per_page=3)
+        page_obj = get_paginated_page(materials, page_number, per_page=10)
         # get_paginated_page импортируется из модуля utils и возвращает отдельную страницу пагинатора с материалами
         # для этой страницы
 
@@ -123,7 +124,7 @@ class CategoryPage(RoutablePageMixin, Page):
             # noinspection PyUnresolvedReferences
             current_category = Category.objects.get(slug=category_slug)
             materials = MaterialPage.get_materials_by_category(current_category)
-            page_obj = get_paginated_page(materials, page_number, per_page=3)
+            page_obj = get_paginated_page(materials, page_number, per_page=10)
 
             return self.render(request, context_overrides={
                 'current_category': current_category,
@@ -146,6 +147,77 @@ class CategoryPage(RoutablePageMixin, Page):
         verbose_name = 'Страница категорий'
 
 
+class RegionCategoryPage(RoutablePageMixin, Page):
+    @route(r'^(?P<category_slug>[-\w]+)/$')
+    @route(r'^(?P<category_slug>[-\w]+)/page_(?P<page_number>\d+)/$')
+    def materials_by_region(self, request, category_slug, page_number=1):
+        try:
+            # noinspection PyUnresolvedReferences
+            current_region_category = RegionCategory.objects.get(slug=category_slug)
+            materials = MaterialPage.get_materials_by_region(current_region_category)
+            page_obj = get_paginated_page(materials, page_number, per_page=3)
+
+            return self.render(request, context_overrides={
+                'page_obj': page_obj,
+                'custom_title': current_region_category.name,
+                'custom_description': f"Новости региона «{current_region_category.name}»"
+            })
+        except ObjectDoesNotExist:
+            # Если категория не найдена, можно вернуть пользователю страницу 404
+            raise Http404("Регион не найден")
+
+    @route(r'^$')  # Маршрут для корневого URL
+    def base_category_route(self, request, *args, **kwargs):
+        raise Http404("Страница не найдена")
+
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    class Meta:
+        verbose_name = 'Страница регионов'
+
+
+class AuthorPage(RoutablePageMixin, Page):
+    @route(r'^(?P<author_slug>[-\w]+)/$')
+    @route(r'^(?P<author_slug>[-\w]+)/page_(?P<page_number>\d+)/$')
+    def materials_by_author(self, request, author_slug, page_number=1):
+        try:
+            current_author = Author.objects.get(slug=author_slug)
+            materials = MaterialPage.get_materials_by_author(author=current_author)
+            page_obj = get_paginated_page(materials, page_number, per_page=7)
+
+            banners = list(Banner.get_banners(pos='aside'))
+            selected_banners = random.sample(banners, min(len(banners), 2))
+            first_banner = selected_banners[0] if len(selected_banners) > 0 else None
+            second_banner = selected_banners[1] if len(selected_banners) > 1 else None
+            if first_banner:
+                Banner.objects.filter(pk=first_banner.pk).update(views=F('views') + 1)
+            if second_banner:
+                Banner.objects.filter(pk=second_banner.pk).update(views=F('views') + 1)
+
+            return self.render(request, context_overrides={
+                'current_author': current_author,
+                'page_obj': page_obj,
+                'total_materials': page_obj.paginator.count,
+                'custom_title': f"Новости от {current_author.name}",
+                'custom_description': f"Новости, написанные {current_author.name}",
+                'first_banner': first_banner,
+                'second_banner': second_banner,
+            })
+        except ObjectDoesNotExist:
+            raise Http404("Автор не найден")
+
+    @route(r'^$')  # Маршрут для корневого URL
+    def base_author_route(self, request, *args, **kwargs):
+        raise Http404("Страница не найдена")
+
+    parent_page_types = ['home.HomePage']
+    subpage_types = []
+
+    class Meta:
+        verbose_name = 'Страница авторов'
+
+
 class MaterialPage(Page):
     pub_date = models.DateTimeField("Дата и время публикации", default=timezone.now)
     body = RichTextField(verbose_name='Контент', blank=True)
@@ -162,6 +234,12 @@ class MaterialPage(Page):
     category = models.ForeignKey(
         'materials.Category', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Категория'
     )
+
+    region = models.ForeignKey(
+        'materials.RegionCategory', on_delete=models.SET_NULL, null=True, blank=True, verbose_name='Регион',
+        help_text="Выберите, только если материал относится к определенному региону"
+    )
+
     # categories = ParentalManyToManyField('materials.Category', verbose_name='Категории', blank=True)
 
     # ClusterTaggableManager - поле для добавления и управления тегами страницы.
@@ -190,6 +268,27 @@ class MaterialPage(Page):
                                   help_text="Если выбрать, материал будет отображаться в разделе главных новостей, "
                                             "вверху главной страницы")
 
+    is_important = models.BooleanField(default=False, verbose_name="Важная новость",
+                                       help_text="Если выбрать, материал будет отображаться в разделе важных новостей, "
+                                                 "вверху главной страницы рядом с главными")
+
+    is_announcement = models.BooleanField(default=False, verbose_name="Анонс",
+                                          help_text="Выберите, если материал является анонсом")
+
+    is_live = models.BooleanField(default=False, verbose_name="Live",
+                                  help_text="Выберите, если материал посвящен текущей пресс-конференции")
+
+    is_survey = models.BooleanField(default=False, verbose_name="Опрос",
+                                    help_text="Выберите, если материал содержит опрос")
+
+    is_photo_report = models.BooleanField(default=False, verbose_name="Фоторепортаж",
+                                          help_text="Выберите, если материал содержит фоторепортаж. Этот материал "
+                                                    "попадет в секцию с фоторепортажами")
+
+    is_video_report = models.BooleanField(default=False, verbose_name="Видеорепортаж",
+                                          help_text="Выберите, если материал содержит видеорепортаж. Этот материал "
+                                                    "попадет в секцию с видеорепортажами")
+
     # SearchField определяет, по каким полям модели будет производиться поиск(обычный поиск на сайте).
     # Некоторые стандартные поля(title, slug, search_description) + 'body'
     search_fields = Page.search_fields + [
@@ -201,6 +300,7 @@ class MaterialPage(Page):
             FieldPanel('pub_date'),
             FieldPanel('author', widget=forms.Select),
             FieldPanel('category', widget=forms.Select),
+            FieldPanel('region', widget=forms.Select),
         ], heading="Информация о материале"),
         FieldPanel('body'),
 
@@ -217,6 +317,12 @@ class MaterialPage(Page):
 
         MultiFieldPanel([
             FieldPanel('is_main'),
+            FieldPanel('is_important'),
+            FieldPanel('is_announcement'),
+            FieldPanel('is_live'),
+            FieldPanel('is_survey'),
+            FieldPanel('is_photo_report'),
+            FieldPanel('is_video_report'),
         ], heading="Отметки"),
 
         FieldPanel('tags'),
@@ -230,15 +336,34 @@ class MaterialPage(Page):
         # Проверяем, что у материала есть категория
         if current_category:
             # Вызываем get_similar_materials для текущей категории и идентификатора страницы
-            similar_materials = MaterialPage.get_similar_materials(category=current_category, current_page_pk=self.pk)
+            similar_materials = MaterialPage.get_similar_materials(category=current_category, current_page_pk=self.pk,
+                                                                   limit=3)
         else:
             similar_materials = MaterialPage.objects.none()  # Возвращаем пустой запрос, если категория не задана
 
-        prev_material, next_material = MaterialPage.get_adjacent_materials(self)
+        # print(f'+++++++++++++++++++{similar_materials}+++++++++++++++++++++')
 
+        top_news = MaterialPage.get_top_news(limit=6)
+
+        banners = Banner.get_banners(pos='aside')
+        banner = random.choice(banners) if banners else None
+
+        if banner:
+            Banner.objects.filter(pk=banner.pk).update(views=F('views') + 1)
+
+        business_category = Category.objects.get(slug='business')
+        business_materials = MaterialPage.get_materials_by_category_with_author(business_category, limit=3)
+
+        # prev_material, next_material = MaterialPage.get_adjacent_materials(self)
+
+        author_page = AuthorPage.objects.live().first()
+
+        context['top_news'] = top_news
         context['similar_materials'] = similar_materials
-        context['prev_material'] = prev_material
-        context['next_material'] = next_material
+        context['banner'] = banner
+        context['business_materials'] = business_materials
+        context['business_materials'] = business_materials
+        context['author_page'] = author_page
 
         return context
 
@@ -281,12 +406,99 @@ class MaterialPage(Page):
         # где необходимо извлечь множество связанных объектов.
 
     @classmethod
-    def get_materials_by_category(cls, category):
+    def get_last_materials(cls, limit=11):
+        return (
+            cls.objects.live()
+            .only('title', 'pub_date', 'view_count', 'author')
+            .select_related('author')
+            .order_by('-first_published_at')[:limit]
+        )
+
+    @classmethod
+    def get_regular_categories_materials(cls, limit=12):
+        return (
+            cls.objects.live()
+            .filter(category__is_basic=False)
+            # .exclude(category__slug__in=['business', 'analytics', 'press_center', 'events'])
+            # Исключаем указанные категории
+            .only('title', 'pub_date', 'view_count', 'main_image', 'category')
+            .select_related('main_image')
+            .select_related('category')
+            .order_by('-first_published_at')[:limit]
+        )
+
+    @classmethod
+    def get_region_materials(cls, limit=12):
+        return (
+            cls.objects.live()
+            .filter(region__isnull=False)  # Фильтр для материалов, у которых поле region не пустое
+            .only('title', 'pub_date', 'view_count', 'main_image', 'category')
+            .select_related('main_image')
+            .select_related('category')
+            .order_by('-first_published_at')[:limit]
+        )
+
+    @classmethod
+    def get_materials_by_category(cls, category, limit=None):
+        query = (
+            cls.objects.live()
+            .filter(category=category)
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image')
+            .select_related('category')
+            .select_related('main_image')
+            .order_by('-first_published_at')
+        )
+
+        if limit is not None:
+            return query[:limit]
+
+        return query
+
+    @classmethod
+    def get_materials_by_category_with_author(cls, category, limit=3):
+        return (
+            cls.objects.live()
+            .filter(category=category)
+            .only('title', 'pub_date', 'view_count', 'author', 'main_image')
+            .select_related('author')
+            .select_related('main_image')
+            .order_by('-first_published_at')[:limit]
+        )
+
+    @classmethod
+    def get_last_material_by_category(cls, category):
         return (
             cls.objects.live()
             .filter(category=category)
             .only('title', 'pub_date', 'view_count', 'category', 'main_image')
             .select_related('category')
+            .select_related('main_image')
+            .order_by('-first_published_at')
+            .first()
+        )
+
+    @classmethod
+    def get_materials_by_region(cls, region, limit=None):
+        query = (
+            cls.objects.live()
+            .filter(region=region)
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image')
+            .select_related('category')
+            .select_related('main_image')
+            .order_by('-first_published_at')
+        )
+
+        if limit is not None:
+            return query[:limit]
+
+        return query
+
+    @classmethod
+    def get_materials_by_author(cls, author):
+        return (
+            cls.objects.live()
+            .filter(author=author)
+            .only('title', 'pub_date', 'main_image')
             .select_related('main_image')
             .order_by('-first_published_at')
         )
@@ -316,9 +528,9 @@ class MaterialPage(Page):
             cls.objects.live()
             .filter(category=category, first_published_at__gte=random_date)
             .exclude(pk=current_page_pk)
-            .only('title', 'pub_date', 'category', 'main_image')
-            .select_related('category')
+            .only('title', 'pub_date', 'main_image', 'author')
             .select_related('main_image')
+            .select_related('author')
             .order_by('-first_published_at')[:limit]
         )
 
@@ -354,29 +566,62 @@ class MaterialPage(Page):
         return (
             cls.objects.live()
             .filter(first_published_at__gte=start_date)
-            .only('title', 'pub_date', 'view_count')
+            .only('title', 'pub_date', 'view_count', 'main_image', 'author')
+            .select_related('main_image')
+            .select_related('author')
             .order_by('-view_count')[:limit]
         )
 
     @classmethod
-    def get_main_materials(cls, limit=3):
+    def get_main_materials(cls, limit=5):
         return (
             cls.objects.live()
             .filter(is_main=True)
-            .only('title', 'main_image')
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image', 'author')
+            .select_related('category')
+            .select_related('main_image')
+            .select_related('author')
+            .order_by('-first_published_at')[:limit]
+        )
+
+    @classmethod
+    def get_important_materials(cls, limit=2):
+        return (
+            cls.objects.live()
+            .filter(is_important=True)
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image')
+            .select_related('category')
             .select_related('main_image')
             .order_by('-first_published_at')[:limit]
         )
 
     @classmethod
-    def get_last_video_materials(cls, limit):
+    def get_photo_report_materials(cls, limit):
+        return (
+            cls.objects.live()
+            .annotate(image_count=Count('gallery_images'))
+            .filter(
+                image_count__gt=1,
+                is_photo_report=True
+            )
+            .order_by('-pub_date')
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image')
+            .select_related('category')
+            .select_related('main_image')[:limit]
+        )
+
+    @classmethod
+    def get_video_report_materials(cls, limit):
         return (
             cls.objects.live().filter(
                 Q(video_url__isnull=False) |
                 Q(fb_video_url__isnull=False) |
                 Q(video_file__isnull=False)
+            ).filter(
+                is_video_report=True
             ).order_by('-pub_date')
-            .only('title', 'pub_date', 'main_image', 'video_url', 'fb_video_url', 'video_file')
+            .only('title', 'pub_date', 'view_count', 'category', 'main_image')
+            .select_related('category')
             .select_related('main_image')[:limit]
         )
 
@@ -433,10 +678,17 @@ class MaterialPageGalleryImage(Orderable):
 # которые можно повторно использовать в разных частях сайта. Например Авторы.
 @register_snippet
 class Author(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(verbose_name="Имя", max_length=255)
+    slug = models.SlugField(max_length=80, unique=True, blank=True, null=True)
+    bio = models.TextField(verbose_name="Биография", blank=True, null=True)
+    profile_image = models.ImageField("Фото", upload_to='authors/',
+                                      help_text="18X18", blank=True, null=True)
 
     panels = [
-        FieldPanel('name')
+        FieldPanel('name'),
+        FieldPanel('slug'),
+        FieldPanel('bio'),
+        FieldPanel('profile_image')
     ]
 
     # Этот метод определяет текстовое представление объекта Author,
@@ -451,15 +703,17 @@ class Author(models.Model):
 
 @register_snippet
 class Category(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(verbose_name="Название", max_length=255)
     slug = models.SlugField(unique=True, max_length=80)
     is_basic = models.BooleanField(default=False, verbose_name="Основная категория",
                                    help_text="Если выбрать, категория будет отображаться в списке основных категорий")
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок сортировки")
 
     panels = [
         FieldPanel('name'),
         FieldPanel('slug'),
         FieldPanel('is_basic'),
+        FieldPanel('sort_order'),
     ]
 
     def __str__(self):
@@ -468,3 +722,23 @@ class Category(models.Model):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
+
+
+@register_snippet
+class RegionCategory(models.Model):
+    name = models.CharField(verbose_name="Название", max_length=255)
+    slug = models.SlugField(unique=True, max_length=80)
+    sort_order = models.PositiveIntegerField(default=0, verbose_name="Порядок сортировки")
+
+    panels = [
+        FieldPanel('name'),
+        FieldPanel('slug'),
+        FieldPanel('sort_order'),
+    ]
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Регион'
+        verbose_name_plural = 'Регионы'

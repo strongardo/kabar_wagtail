@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags %}
+
+{% block content %}
+
+<main class="press-centre-page press-conferense-announce-page">
+    <div class="container">
+        <div class="upper-left-side-content-block">
+            <div class="section-block">
+                <h3 class="section-title">Пресс центр</h3>
+            </div>
+        </div>
+
+        <div class="aside-page-inner margin-element">
+            <div class="left-side-content-block">
+                <ul class="announce-list margin-element">
+                    {% for post in page_obj %}
+                    <li class="announce-list-item">
+                        <h3 class="section-title">{{ post.pub_date|date:"d F" }}</h3>
+                        <div class="announce-block">
+				<span class="news-time news-info-item">
+				  <div class="vl"></div>
+				  <svg width="13" height="12" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g clip-path="url(#clip0_4759_3792)">
+					  <path d="M6.7998 6.49951V4.49951M11.2998 2.99951L10.2998 1.99951M5.7998 0.999512H7.7998M6.7998 10.4995C4.59067 10.4995 2.7998 8.70865 2.7998 6.49951C2.7998 4.29037 4.59067 2.49951 6.7998 2.49951C9.00894 2.49951 10.7998 4.29037 10.7998 6.49951C10.7998 8.70865 9.00894 10.4995 6.7998 10.4995Z"
+                            stroke="#555555" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+					</g>
+					<defs>
+					  <clipPath id="clip0_4759_3792">
+						<rect width="12" height="12" fill="#555555" transform="translate(0.799805 -0.000488281)"/>
+					  </clipPath>
+					</defs>
+				  </svg>
+				  {{ post.pub_date|date:"H:i" }}
+				</span>
+                            <div class="announce-title">{{ post.title }}</div>
+                            <ul class="participants-list">
+                                Участники:
+                                 {% for part in post.participants.all %}
+                                <li class="participants-list-item">— {{ part.position }} {{ part.name }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                {% if page_obj.paginator.num_pages > 1 %}
+                <div class="pagination-block margin-element">
+                    <!-- Предыдущая страница -->
+                    {% if page_obj.has_previous %}
+                    <a href="{% routablepageurl self 'announcements_view' page_number=page_obj.previous_page_number %}"
+                       class="pagination-control-button pagination-prev">
+                        <img
+                                src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                alt="pagination-arrow"
+                        />
+                    </a>
+                    {% else %}
+                    <a class="pagination-control-button pagination-prev">
+                        <img
+                                src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                alt="pagination-arrow"
+                        />
+                    </a>
+                    {% endif %}
+
+
+                    <!-- Номера страниц -->
+                    <div class="pagination-numbers">
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                        <a class="active">
+                            {{ num }}
+                        </a>
+                        {% else %}
+                        <a href="{% routablepageurl self 'announcements_view' page_number=num %}">
+                            {{ num }}
+                        </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <!-- Следующая страница -->
+                    {% if page_obj.has_next %}
+                    <a href="{% routablepageurl self 'announcements_view' page_number=page_obj.next_page_number %}"
+                       class="pagination-control-button pagination-next">
+                        <img
+                                src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                alt="pagination-arrow"
+                        />
+                    </a>
+                    {% else %}
+                    <a class="pagination-control-button pagination-next">
+                        <img
+                                src="{% static 'images/vectors/icons/pagination-arrow.svg' %}"
+                                alt="pagination-arrow"
+                        />
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                <span class="warning-text">
+              Мнения, высказанные на пресс-конференциях в агентстве, могут не
+              совпадать с мнением КНИА «Кабар».
+            </span>
+            </div>
+
+            <aside class="right-side-content-block">
+                <div class="news-popular news-feed-inner">
+                    <a href="#">
+                        <h3 class="section-title arrow">Пресс центр *Кабар*</h3>
+                    </a>
+                    <ul class="news-list">
+                        {% for post in press_materials %}
+                        <li>
+                            <a href="{% pageurl post %}" class="news-list-item">
+                                <div class="news-image-block square-container">
+                                    {% image post.main_image original class="news-image" alt=post.main_image.title %}
+                                </div>
+                                <div class="news-info">
+                                    <h4 class="news-title">{{ post.title }}</h4>
+                                    <div class="news-data-block-inner">
+                                        <span class="news-date news-info-item">
+                          <svg
+                                  width="11"
+                                  height="12"
+                                  viewBox="0 0 11 12"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                                    d="M2.4 5.4H3.6V6.6H2.4V5.4ZM10.8 2.4V10.8C10.8 11.46 10.26 12 9.6 12H1.2C0.88174 12 0.576515 11.8736 0.351472 11.6485C0.126428 11.4235 0 11.1183 0 10.8L0.00599999 2.4C0.00599999 1.74 0.534 1.2 1.2 1.2H1.8V0H3V1.2H7.8V0H9V1.2H9.6C10.26 1.2 10.8 1.74 10.8 2.4ZM1.2 3.6H9.6V2.4H1.2V3.6ZM9.6 10.8V4.8H1.2V10.8H9.6ZM7.2 6.6H8.4V5.4H7.2V6.6ZM4.8 6.6H6V5.4H4.8V6.6Z"
+                                    fill="#555555"
+                            />
+                          </svg>
+                          {{ post.pub_date|date:"d F Y" }}
+                        </span>
+                                        <span class="vl"></span>
+                                        <span class="news-views news-info-item">
+                          <svg
+                                  width="14"
+                                  height="10"
+                                  viewBox="0 0 14 10"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                                    d="M13.2244 4.86711C13.2058 4.82445 12.7508 3.81547 11.7347 2.79938C10.7919 1.85766 9.17207 0.734375 6.79973 0.734375C4.42738 0.734375 2.80754 1.85766 1.86472 2.79938C0.848631 3.81547 0.393631 4.82281 0.375037 4.86711C0.356341 4.90911 0.34668 4.95457 0.34668 5.00055C0.34668 5.04652 0.356341 5.09198 0.375037 5.13398C0.393631 5.17609 0.848631 6.18508 1.86472 7.20117C2.80754 8.14289 4.42738 9.26562 6.79973 9.26562C9.17207 9.26562 10.7919 8.14289 11.7347 7.20117C12.7508 6.18508 13.2058 5.17773 13.2244 5.13398C13.2431 5.09198 13.2528 5.04652 13.2528 5.00055C13.2528 4.95457 13.2431 4.90911 13.2244 4.86711ZM6.79973 8.60938C5.08363 8.60938 3.58519 7.98484 2.34543 6.75383C1.82574 6.23731 1.38596 5.64621 1.04058 5C1.38586 4.3539 1.82566 3.76296 2.34543 3.24672C3.58519 2.01516 5.08363 1.39062 6.79973 1.39062C8.51582 1.39062 10.0143 2.01516 11.254 3.24672C11.7738 3.76296 12.2136 4.3539 12.5589 5C12.2105 5.66773 10.4638 8.60938 6.79973 8.60938ZM6.79973 2.48438C6.30218 2.48438 5.81581 2.63191 5.40212 2.90833C4.98843 3.18475 4.66599 3.57764 4.47559 4.03731C4.28519 4.49698 4.23537 5.00279 4.33244 5.49077C4.4295 5.97876 4.66909 6.427 5.02091 6.77882C5.37273 7.13063 5.82097 7.37022 6.30895 7.46729C6.79693 7.56435 7.30274 7.51454 7.76241 7.32413C8.22208 7.13373 8.61497 6.8113 8.89139 6.39761C9.16781 5.98391 9.31535 5.49754 9.31535 5C9.31448 4.33308 9.04916 3.69373 8.57758 3.22214C8.106 2.75056 7.46664 2.48524 6.79973 2.48438ZM6.79973 6.85938C6.43198 6.85938 6.07248 6.75033 5.76671 6.54601C5.46094 6.3417 5.22262 6.05131 5.08189 5.71155C4.94115 5.3718 4.90433 4.99794 4.97608 4.63725C5.04782 4.27657 5.22491 3.94526 5.48495 3.68522C5.74499 3.42518 6.0763 3.2481 6.43698 3.17635C6.79766 3.10461 7.17152 3.14143 7.51128 3.28216C7.85103 3.42289 8.14143 3.66121 8.34574 3.96699C8.55005 4.27276 8.6591 4.63225 8.6591 5C8.6591 5.49314 8.4632 5.96608 8.1145 6.31478C7.7658 6.66348 7.29286 6.85938 6.79973 6.85938Z"
+                                    fill="#555555"
+                                    stroke="#555555"
+                                    stroke-width="0.5"
+                            />
+                          </svg>
+                          {{ post.view_count }}
+                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

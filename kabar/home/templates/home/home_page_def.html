@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+{% block body_class %}template-homepage{% endblock %}
+
+{% block content %}
+<div id="main">
+    <div id="content" class="left">
+        <div class="projects">
+            <h2 style="margin-bottom: 10px;">Главные новости</h2>
+            <ul>
+                {% for post in main_materials %}
+                <li class="">
+                    <a href="{% pageurl post %}">
+                        {% with post=post.specific %}
+
+                        {% with image=post.main_image %}
+                        {% if image %}
+                        {% image image fill-80x60 %}
+                        {% endif %}
+                        {% endwith %}
+
+                        {{ post.title }}
+
+                        {% endwith %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="video-section">
+                <h2 style="margin-bottom: 10px;">Видео</h2>
+                {% if last_video_material.video_url %}
+                <!-- Видео с YouTube или Vimeo -->
+                <iframe width="430" height="240" src="{{ last_video_material.video_url }}" frameborder="0"
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+
+                {% elif last_video_material.fb_video_url %}
+                <!-- Видео с Facebook -->
+                <!-- Load Facebook SDK for JavaScript -->
+                <div id="fb-root"></div>
+                <script async defer src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.2"></script>
+                <div class="video_container fb-video"
+                     data-href="{{ last_video_material.fb_video_url }}" data-width="430" data-show-text="false">
+                    <div class="fb-xfbml-parse-ignore"></div>
+                </div>
+
+                {% elif last_video_material.video_file %}
+                <video controls width="430" height="240">
+                    <source src="{{ last_video_material.video_file.url }}" type="video/mp4">
+                    Ваш браузер не поддерживает видео тег.
+                </video>
+                {% endif %}
+
+                <ul>
+                    {% for post in next_last_video_materials %}
+                    <li class="">
+                        <a href="{% pageurl post %}">
+                            {% with post=post.specific %}
+
+                            {% with image=post.main_image %}
+                            {% if image %}
+                            {% image image fill-80x60 %}
+                            {% endif %}
+                            {% endwith %}
+
+                            {{ post.title }} | {{ post.pub_date }}
+
+                            {% endwith %}
+                        </a>
+                    </li>
+                    {% empty %}
+                    <li>Нет материалов с видео</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="banners">
+                <h2 style="margin-bottom: 10px;">Баннеры</h2>
+                {% if top_banner %}
+                <a href="{% url 'banner_click' top_banner.id %}" target="_blank" style="display: block;">
+                    {% image top_banner.image width-730 %}
+                </a>
+                {% endif %}
+
+                {% if bottom_banner %}
+                <a href="{% url 'banner_click' bottom_banner.id %}" target="_blank" style="display: block;">
+                    {% image bottom_banner.image width-730 %}
+                </a>
+                {% endif %}
+
+                {% if aside_banner %}
+                <a href="{% url 'banner_click' aside_banner.id %}" target="_blank" style="display: block;">
+                    {% image aside_banner.image width-300 %}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="cl">&nbsp;</div>
+</div>
+{% endblock %}

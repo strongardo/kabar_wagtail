@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags %}
+
+{% block content %}
+
+<div id="main">
+    <div id="content" class="left">
+        <div class="projects">
+
+            <h1>{{ current_category.name }}</h1>
+
+            <ul>
+                {% for post in page_obj %}
+                <li style="margin-bottom: 20px; display: flex; column-gap: 20px">
+                    {% with post=post.specific %}
+
+                    {% with image=post.main_image %}
+                    {% if image %}
+                    {% image image fill-80x60 %}
+                    {% endif %}
+                    {% endwith %}
+
+                    <div>
+                        <h2><a href="{% pageurl post %}">{{ post.title }}</a></h2>
+                        <span style="margin-right: 10px">{{ post.pub_date|date:"d/m/y H:i" }}</span>
+
+                        {% if post.category %}
+                        {% with category=post.category %}
+                        <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
+                            {{ category.name }}
+                        </a>
+                        {% endwith %}
+                        {% endif %}
+
+                        <span style="margin-left: 10px">{{ post.view_count }} просмотров</span>
+
+                        {% endwith %}
+                    </div>
+                </li>
+                {% empty %}
+                <p>Материалов пока нет в этой категории</p>
+                {% endfor %}
+            </ul>
+
+            {% if page_obj.paginator.num_pages > 1 %}
+            <div class="pagination">
+                <!-- Предыдущая страница -->
+                {% if page_obj.has_previous %}
+                <a href="{% routablepageurl self 'materials_by_category' category_slug=current_category.slug page_number=page_obj.previous_page_number %}">
+                    &laquo;
+                </a>
+                {% else %}
+                <span class="disabled prev">&laquo;</span>
+                {% endif %}
+
+                <!-- Номера страниц -->
+                {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <span class="current">{{ num }}</span>
+                {% else %}
+                <a href="{% routablepageurl self 'materials_by_category' category_slug=current_category.slug page_number=num %}">
+                    {{ num }}
+                </a>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Следующая страница -->
+                {% if page_obj.has_next %}
+                <a href="{% routablepageurl self 'materials_by_category' category_slug=current_category.slug page_number=page_obj.next_page_number %}">
+                    &raquo;
+                </a>
+                {% else %}
+                <span class="disabled">&raquo;</span>
+                {% endif %}
+            </div>
+            {% endif %}
+
+
+        </div>
+    </div>
+    <div class="cl">&nbsp;</div>
+</div>
+
+{% endblock %}

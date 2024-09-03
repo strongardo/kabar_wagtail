@@ -1,17 +1,91 @@
-{% load wagtailroutablepage_tags materials_tags wagtail_cache %}
-{% wagtailcache 86400 "global_footer" %}
-<div id="footer">
-    <div style="display: flex; column-gap: 40px; align-items: center">
+{% load static %}
 
-        {% top_news_list %}
+<footer class="footer">
+    <div class="upper-footer">
+        <div class="container">
+            <div class="upper-footer-inner">
+                <div class="social-media-block upper-footer-item">
+                    <h3 class="section-title">Подписывайтесь на наши соцсети!</h3>
+                    <div class="media-links">
+                        <a href="https://www.facebook.com/rus.kabar.kg?locale=ru_RU" class="media-links-item">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Facebook.svg' %}"
+                                    alt="Facebook logo"
+                            />
+                            28 тыс подписчиков
+                        </a>
 
-        <form style="width: 200px;" action="{% url 'search' %}" method="get">
-            <input class="search-input" type="text" name="query" {% if search_query %} value="{{ search_query }}" {% endif %}>
-            <input type="submit" value="Поиск" style="margin-top: 10px; width: 100px; height: 30px;">
-        </form>
+                        <a href="https://www.youtube.com/@user-ti2yb8po3q" class="media-links-item">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Youtube.svg' %}"
+                                    alt="Youtube logo"
+                            />
+                            16.8 тыс подписчиков
+                        </a>
 
+                        <a href="https://t.me/kniakabar" class="media-links-item">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Telegram.svg' %}"
+                                    alt="Telegram logo"
+                            />
+                            0.48 тыс подписчиков
+                        </a>
+
+                        <a href="https://www.instagram.com/kabar_rus/" class="media-links-item">
+                            <img
+                                    src="{% static 'images/vectors/social_media/Instagram.svg' %}"
+                                    alt="Instagram logo"
+                            />
+                            75 тыс подписчиков
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <p class="copy right">Copyright &copy; 2024 </p>
-</div>
-{% endwagtailcache %}
+    <div class="lower-footer">
+        <div class="container">
+            <div class="lower-footer-inner">
+                <a href="#"
+                ><img src="{% static 'images/logo.png' %}" alt="Kabar logo"
+                /></a>
+                <div class="links-list-block">
+                    <ul class="links-list">
+                        <li class="links-list-item">
+                            <a href="/ob-agentstve">Об агентстве</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="#">правила использования</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="#">контакты</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="#">реклама</a>
+                        </li>
+                    </ul>
+                    <ul class="links-list">
+                        <li class="links-list-item">
+                            <a href="/">главная</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="/news">лента новостей</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="/press-conference-announcements/">пресс-центр</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="/cat/business">бизнес новости</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="/search">поиск</a>
+                        </li>
+                        <li class="links-list-item">
+                            <a href="/archive">архив</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>

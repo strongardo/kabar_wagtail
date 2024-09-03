@@ -1,0 +1,10 @@
+{% load wagtailroutablepage_tags %}
+
+
+{% for category in categories %}
+<li class="header-popup-category-list-item">
+    <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
+        {{ category.name }}
+    </a>
+</li>
+{% endfor %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static wagtailcore_tags wagtailimages_tags wagtailroutablepage_tags %}
+
+{% block body_class %}template-searchresults{% endblock %}
+
+{% block title %}Результаты поиска: {{ search_query }}{% endblock %}
+
+{% block content %}
+
+
+<div id="main">
+    <div id="content" class="left">
+        <div class="projects">
+
+            <h1>Результаты поиска: {{ search_query }}</h1>
+
+            <ul>
+                {% for post in search_results %}
+                <li style="margin-bottom: 20px; display: flex; column-gap: 20px">
+                    {% with post=post.specific %}
+
+                    {% with image=post.main_image %}
+                    {% if image %}
+                    {% image image fill-80x60 %}
+                    {% endif %}
+                    {% endwith %}
+
+                    <div>
+                        <h2><a href="{% pageurl post %}">{{ post.title }}</a></h2>
+                        <span style="margin-right: 10px">{{ post.pub_date|date:"d/m/y H:i" }}</span>
+
+                        {% if post.category %}
+                        {% with category=post.category %}
+                        <a href="{% routablepageurl category_page 'materials_by_category' category.slug %}">
+                            {{ category.name }}
+                        </a>
+                        {% endwith %}
+                        {% endif %}
+
+                        <span style="margin-left: 10px">{{ post.view_count }} просмотров</span>
+
+                        {% endwith %}
+                    </div>
+                </li>
+                {% empty %}
+                <p>По вашему запросу ничего не найдено</p>
+                {% endfor %}
+            </ul>
+
+            <div class="pagination">
+                {% if search_results.has_previous %}
+                <a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">
+                    Предыдущая
+                </a>
+                {% endif %}
+
+                {% if search_results.has_next %}
+                <a href="{% url 'search' %}?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">
+                    Следующая
+                </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+    <div class="cl">&nbsp;</div>
+</div>
+
+{% endblock %}

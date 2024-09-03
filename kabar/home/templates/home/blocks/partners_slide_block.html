@@ -1,0 +1,12 @@
+<div class="swiper-slide">
+    <a href="{{ post.url }}" target="_blank" rel="nofollow">
+        {% if post.image %}
+        <img
+                src="{{ post.image.url }}"
+                alt="{{ post.name }}"
+        />
+        {% else %}
+        <p>No image available</p>
+        {% endif %}
+    </a>
+</div>
